@@ -1,0 +1,23 @@
+{
+    "name": "mvanduijker/joomla-cli",
+    "type": "project",
+    "description": "Command-line script to manage joomla sites",
+    "keywords": ["joomla", "cli", "tools"],
+    "homepage": "https://github.com/mvanduijker/joomla-cli",
+    "authors": [
+        {
+            "name": "Mark van Duijker",
+            "email": "mark@duyker.nl"
+        }
+    ],
+    "require": {
+        "symfony/console": "2.4.*"
+    },
+    "autoload": {
+        "psr-4": {
+             "JoomlaCli\\": "src/JoomlaCli/"
+        }
+    },
+   "bin": ["bin/joomla-cli"]
+
+}

@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if(is_file($autoload)) {
+    require $autoload;
+} else {
+    require __DIR__ . '/../../../../vendor/autoload.php';
+}
+
+use JoomlaCli\Console\Command\Core\DownloadCommand;
+use Symfony\Component\Console\Application;
+
+$app = new Application('Joomla-cli', '1.0');
+$app->add(new DownloadCommand());
+
+$app->run();
