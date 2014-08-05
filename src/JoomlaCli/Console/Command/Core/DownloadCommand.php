@@ -36,6 +36,11 @@ class DownloadCommand extends Command
     protected $target;
 
     /**
+     * @var bool
+     */
+    protected $keepInstallationFolder;
+
+    /**
      * Configure command
      *
      * @return void
@@ -58,6 +63,12 @@ class DownloadCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Joomla version',
                 '3.*'
+            )
+            ->addOption(
+                'keep-installation-folder',
+                null,
+                InputOption::VALUE_NONE,
+                'Keep the installation folder after download'
             );
     }
 
@@ -76,6 +87,7 @@ class DownloadCommand extends Command
         $this->version = $input->getOption('joomla-version');
         $this->versions = new Versions();
         $this->release = $this->versions->getVersion($this->version);
+        $this->keepInstallationFolder = $input->getOption('keep-installation-folder');
 
         $this->check();
         $this->doDownload($output);
@@ -131,6 +143,12 @@ class DownloadCommand extends Command
 
         // unpack
         `cd $target; tar xzf $tempFile --strip 1`;
+
+        if (!$this->keepInstallationFolder) {
+            $installationFolder = escapeshellarg($this->target . '/installation');
+
+            `rm -rf $installationFolder`;
+        }
 
         unlink($tempFile);
     }
