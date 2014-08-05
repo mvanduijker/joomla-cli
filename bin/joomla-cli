@@ -9,9 +9,11 @@ if(is_file($autoload)) {
 }
 
 use JoomlaCli\Console\Command\Core\DownloadCommand;
+use JoomlaCli\Console\Command\Core\InstallDbCommand;
 use Symfony\Component\Console\Application;
 
 $app = new Application('Joomla-cli', '1.0');
 $app->add(new DownloadCommand());
+$app->add(new InstallDbCommand());
 
 $app->run();

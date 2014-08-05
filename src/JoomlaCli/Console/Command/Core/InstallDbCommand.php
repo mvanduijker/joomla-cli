@@ -1,0 +1,226 @@
+<?php
+
+namespace JoomlaCli\Console\Command\Core;
+
+use JoomlaCli\Joomla\Versions;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * Class DownloadCommand
+ *
+ * @package JoomlaCli\Console\Command\Core
+ */
+class InstallDbCommand extends Command
+{
+    /**
+     * Configure command
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $this
+            ->setName('core:install-db')
+            ->setDescription('Install default joomla database')
+            ->addOption(
+                'dbname',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Mysql database name',
+                'joomla'
+            )
+            ->addOption(
+                'dbuser',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Mysql database user',
+                'root'
+            )
+            ->addOption(
+                'dbpass',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Mysql Database password',
+                ''
+            )
+            ->addOption(
+                'dbhost',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Mysql Host',
+                'localhost'
+            )
+            ->addOption(
+                'dbprefix',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Mysql Host',
+                'jos_'
+            )
+            ->addOption(
+                'install-sample-data',
+                null,
+                InputOption::VALUE_NONE,
+                'Install sample data'
+            )
+            ->addOption(
+                'joomla-version',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Joomla version',
+                '3.*'
+            );
+    }
+
+    /**
+     * Implement execute method
+     *
+     * @param InputInterface  $input  input object to retrieve input from commandline
+     * @param OutputInterface $output output object to perform output actions
+     *
+     * @return int|null|void
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+
+        $this->version = $input->getOption('joomla-version');
+        $this->versions = new Versions();
+        $this->release = $this->versions->getVersion($this->version);
+        $this->dbname = $input->getOption('dbname');
+        $this->dbuser = $input->getOption('dbuser');
+        $this->dbpassword = $input->getOption('dbpass');
+        $this->dbhost = $input->getOption('dbhost');
+        $this->dbprefix = $input->getOption('dbprefix');
+        $this->target = sys_get_temp_dir() . '/' . uniqid('Joomla-cli');
+        $this->installSampleData = $input->getOption('install-sample-data');
+
+        $this->check();
+        $this->doInstallDb($input, $output);
+
+    }
+
+    /**
+     * Perform some checks before we start executing real stuff
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function check()
+    {
+        if (!$this->release) {
+            throw new \RuntimeException('Could not find version of ' . $this->version);
+        }
+    }
+
+    /**
+     * Perform the download and extraction to target directory
+     *
+     * @param OutputInterface $output output object to perform output actions
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function doInstallDb(InputInterface $input, OutputInterface $output)
+    {
+        $target = escapeshellarg($this->target);
+
+        $returnValue = `mkdir -p $target`;
+        if ($returnValue) {
+            throw new \RuntimeException('Could not create directory ' . $this->target);
+        }
+
+        $release = array_keys($this->release)[0];
+        $url = array_values($this->release)[0];
+        $output->writeln('<info>Downloading release '. $release .'</info>');
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'Joomla-cli');
+
+        $bytes = file_put_contents($tempFile, fopen($url, 'r'));
+        if ($bytes === false || $bytes === 0) {
+            throw new \RuntimeException(sprintf('Failed to download %s', $url));
+        }
+
+        // unpack
+        `cd $target; tar xzf $tempFile --strip 1`;
+
+        // do sql stuff
+        try {
+            $this->createDatabase();
+            $this->importDatabase();
+            $this->createAdminUser();
+
+        } catch (\Exception $e) {
+            $this->cleanUp($tempFile, $this->target);
+
+            throw $e;
+        }
+
+        $this->cleanUp($tempFile, $this->target);
+    }
+
+    protected function createDatabase()
+    {
+        $result = exec(
+            sprintf(
+                'echo \'CREATE DATABASE %s CHARACTER SET utf8\' | mysql -u %s %s -h %s',
+                escapeshellarg($this->dbname),
+                escapeshellarg($this->dbuser),
+                $this->dbpassword ? '-p' . escapeshellarg($this->dbpassword) : '',
+                escapeshellarg($this->dbhost)
+            )
+        );
+
+        if (!empty($result)) {
+            throw new \RuntimeException(
+                sprintf('Database creation error %s. Output: %s', $this->dbname, $result)
+            );
+        }
+    }
+
+    protected function importDatabase()
+    {
+        $dumps = array($this->target . '/installation/sql/mysql/joomla.sql');
+
+        if ($this->installSampleData) {
+            $dumps[] = $this->target . '/installation/sql/mysql/sample_default.sql';
+        }
+
+        foreach ($dumps as $dump) {
+            $contents = file_get_contents($dump);
+            $contents = str_replace('#__', $this->dbprefix, $contents);
+            file_put_contents($dump, $contents);
+
+            $result = exec(
+                sprintf(
+                    'mysql -u %s %s -h %s %s < %s',
+                    escapeshellarg($this->dbuser),
+                    $this->dbpassword ? '-p' . escapeshellarg($this->dbpassword) : '',
+                    escapeshellarg($this->dbhost),
+                    escapeshellarg($this->dbname),
+                    escapeshellarg($dump)
+                )
+            );
+
+            if (!empty($result)) { // MySQL returned an error
+                throw new \RuntimeException(sprintf('Cannot import database "%s". Output: %s', $dump, $result));
+            }
+        }
+    }
+
+    protected function createAdminUser()
+    {
+
+    }
+
+    protected function cleanUp($tempFile, $tempTarget)
+    {
+        $target = escapeshellarg($tempTarget);
+        unlink($tempFile);
+        `rm -rf $target`;
+    }
+}

@@ -29,14 +29,14 @@ class DownloadCommand extends Command
                 'path',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Target path for Joomla download (defaults to joomla)',
+                'Target path for Joomla download',
                 'joomla'
             )
             ->addOption(
                 'joomla-version',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Joomla version (defaults to latest stable)',
+                'Joomla version',
                 '3.*'
             );
     }
