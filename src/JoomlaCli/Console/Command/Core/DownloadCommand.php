@@ -16,6 +16,26 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DownloadCommand extends Command
 {
     /**
+     * @var string
+     */
+    protected $version;
+
+    /**
+     * @var Versions
+     */
+    protected $versions;
+
+    /**
+     * @var Array
+     */
+    protected $release;
+
+    /**
+     * @var string
+     */
+    protected $target;
+
+    /**
      * Configure command
      *
      * @return void

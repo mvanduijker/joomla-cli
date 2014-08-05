@@ -9,12 +9,64 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class DownloadCommand
+ * Class InstallDbCommand
+ *
+ * Installs Mysql database from given joomla version
  *
  * @package JoomlaCli\Console\Command\Core
  */
 class InstallDbCommand extends Command
 {
+    /**
+     * @var string
+     */
+    protected $version;
+
+    /**
+     * @var Versions
+     */
+    protected $versions;
+
+    /**
+     * @var Array
+     */
+    protected $release;
+
+    /**
+     * @var string
+     */
+    protected $dbname;
+
+    /**
+     * @var string
+     */
+    protected $dbuser;
+
+    /**
+     * @var string
+     */
+    protected $dbpassword;
+
+    /**
+     * @var string
+     */
+    protected $dbhost;
+
+    /**
+     * @var string
+     */
+    protected $dbprefix;
+
+    /**
+     * @var string
+     */
+    protected $target;
+
+    /**
+     * @var bool
+     */
+    protected $installSampleData;
+
     /**
      * Configure command
      *
@@ -98,7 +150,7 @@ class InstallDbCommand extends Command
         $this->installSampleData = $input->getOption('install-sample-data');
 
         $this->check();
-        $this->doInstallDb($input, $output);
+        $this->doInstallDb($output);
 
     }
 
@@ -116,16 +168,18 @@ class InstallDbCommand extends Command
         }
     }
 
+
     /**
-     * Perform the download and extraction to target directory
+     * Perform the sql statements, also downloads given Joomla version so we can get the install.sql
      *
      * @param OutputInterface $output output object to perform output actions
      *
      * @throws \RuntimeException
+     * @throws \Exception
      *
      * @return void
      */
-    protected function doInstallDb(InputInterface $input, OutputInterface $output)
+    protected function doInstallDb(OutputInterface $output)
     {
         $target = escapeshellarg($this->target);
 
@@ -163,6 +217,13 @@ class InstallDbCommand extends Command
         $this->cleanUp($tempFile, $this->target);
     }
 
+    /**
+     * Create mysql database
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     protected function createDatabase()
     {
         $result = exec(
@@ -182,6 +243,13 @@ class InstallDbCommand extends Command
         }
     }
 
+    /**
+     * Import installation databases
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     protected function importDatabase()
     {
         $dumps = array($this->target . '/installation/sql/mysql/joomla.sql');
@@ -212,11 +280,65 @@ class InstallDbCommand extends Command
         }
     }
 
+    /**
+     * Create admin user with password admin
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     protected function createAdminUser()
     {
+        $release = array_keys($this->release)[0];
+        if (is_numeric(substr($release, 0, 1)) && substr($release, 0, 1) < 3) {
+            // joomla 2.x admin user insert query
+            $query = 'INSERT INTO `#__users` ' .
+                '(`id`, `name`, `username`, `email`, `password`, `usertype`, `block`, ' .
+                '`sendEmail`, `registerDate`, `lastvisitDate`, `activation`, `params`, ' .
+                '`lastResetTime`, `resetCount`) VALUES ' .
+                '(300, \'Super User\', \'admin\', \'admin@example.com\', \'$P$DNZKT30Km/anLr4MyojTpxoOFx2H3H.\', \'deprecated\',' .
+                '0, 1, \'2014-08-04 22:23:33\', \'2014-08-04 22:23:33\', \'0\', \'\', \'0000-00-00 00:00:00\', 0);';
+            $query .= ' INSERT INTO `#__user_usergroup_map` (`user_id`, `group_id`) VALUE (300, 8);';
+        } else {
+            // joomla 3.x admin user insert query
+            $query = 'INSERT INTO `#__users` ' .
+                '(`id`, `name`, `username`, `email`, `password`, `block`, ' .
+                '`sendEmail`, `registerDate`, `lastvisitDate`, `activation`, `params`, ' .
+                '`lastResetTime`, `resetCount`) VALUES ' .
+                '(300, \'Super User\', \'admin\', \'admin@example.com\', \'$2y$10$eXr9/sI4r6/XtSVzO52KpuHn2QHZoPxoiMBKZRanDuXokjKB08s0.\', ' .
+                '0, 1, \'2014-08-04 22:23:33\', \'2014-08-04 22:23:33\', \'0\', ' .
+                '\'{\"admin_style\":\"\",\"admin_language\":\"\",\"language\":\"\",\"editor\":\"\",\"helpsite\":\"\",\"timezone\":\"\"}\', \'0000-00-00 00:00:00\', 0);';
+            $query .= ' INSERT INTO `#__user_usergroup_map` (`user_id`, `group_id`) VALUE (300, 8);';
+        }
 
+        $query = str_replace('#__', $this->dbprefix, $query);
+
+        $result = exec(
+            sprintf(
+                'echo %s | mysql -u %s %s -h %s %s',
+                escapeshellarg($query),
+                escapeshellarg($this->dbuser),
+                $this->dbpassword ? '-p' . escapeshellarg($this->dbpassword) : '',
+                escapeshellarg($this->dbhost),
+                escapeshellarg($this->dbname)
+            )
+        );
+
+        if (!empty($result)) {
+            throw new \RuntimeException(
+                sprintf('Admin user creation error %s. Output: %s', $this->dbname, $result)
+            );
+        }
     }
 
+    /**
+     * Cleanup created temp files
+     *
+     * @param string $tempFile   tarBall
+     * @param string $tempTarget joomla installation directory
+     *
+     * @return void
+     */
     protected function cleanUp($tempFile, $tempTarget)
     {
         $target = escapeshellarg($tempTarget);
