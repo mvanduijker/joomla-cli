@@ -109,9 +109,12 @@ class ListCommand extends Command
         $model = \JModelLegacy::getInstance('Languages', 'InstallerModel');
         $model->findLanguages();
         $items = $model->getItems();
+        $table = \JTable::getInstance('update');
 
         foreach ($items as $item) {
-            $output->writeln($item->name);
+            $table->load($item->update_id);
+            $key = preg_replace('/^pkg_/i', '', $table->element);
+            $output->writeln($key . ' (' . $item->name . ')');
         }
 
     }
@@ -137,7 +140,7 @@ class ListCommand extends Command
         $items = $model->getData();
 
         foreach ($items as $item) {
-            $output->writeln($item->name);
+            $output->writeln($item->language . ' (' . $item->name . ')');
         }
     }
 }

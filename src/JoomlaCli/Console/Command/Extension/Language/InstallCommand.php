@@ -99,15 +99,43 @@ class InstallCommand extends Command
         $joomlaApp->set('list_limit', 10000);
         $lang = $input->getArgument('language');
 
+        // check if language already installed
+        \JModelLegacy::addIncludePath($joomlaApp->getPath() . '/administrator/components/com_installer/models', 'InstallerModel');
+        /* @var $model \InstallerModelManage */
+        $model = \JModelLegacy::getInstance('Manage', 'InstallerModel');
+        $items = $model->getItems();
+
+        foreach ($items as $item) {
+            if ($item->type !== 'language') continue;
+            if (strtoupper($item->element) === strtoupper($lang)) {
+
+                // check if language is installed on disk, if not installed remove from database and reinstall
+                if (file_exists($joomlaApp->getPath() . '/language/' . $item->element)) {
+                    $output->writeln('<info>Language ' . $item->element . ' already installed.');
+                    return;
+                } else {
+                    // language in database but not on disk, lets cleanup database first so we can install
+                    $db = \JFactory::getDbo();
+                    $db->query('DELETE FROM #__extensions WHERE type=' . $db->quote('language') . ' AND element=' . $db->quote($item->element));
+                    $db->query('DELETE FROM #__extensions WHERE type=' . $db->quote('package') . ' AND element=' . $db->quote('pkg_' . $item->element));
+                    break;
+                }
+            }
+        }
 
         \JModelLegacy::addIncludePath($joomlaApp->getPath() . '/administrator/components/com_installer/models', 'InstallerModel');
         /* @var $model \InstallerModelLanguages */
         $model = \JModelLegacy::getInstance('Languages', 'InstallerModel');
         $model->findLanguages();
         $items = $model->getItems();
+        $table = \JTable::getInstance('update');
 
         foreach ($items as $item) {
-            if (strtoupper($item->name) === strtoupper($lang)) {
+
+            $table->load($item->update_id);
+            $key = preg_replace('/^pkg_/i', '', $table->element);
+
+            if (strtoupper($key) === strtoupper($lang)) {
 
                 $output->writeln('<info>Installing language '. $lang .'</info>');
                 $model->install([$item->update_id]);
