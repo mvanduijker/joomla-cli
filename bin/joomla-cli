@@ -12,6 +12,7 @@ use JoomlaCli\Console\Command\Core\DownloadCommand;
 use JoomlaCli\Console\Command\Core\InstallDbCommand;
 use JoomlaCli\Console\Command\Core\UpdateDbCommand;
 use JoomlaCli\Console\Command\Extension\Language\InstallCommand;
+use JoomlaCli\Console\Command\Extension\Language\ListCommand;
 use Symfony\Component\Console\Application;
 
 $app = new Application('Joomla-cli', '1.0');
@@ -19,5 +20,6 @@ $app->add(new DownloadCommand());
 $app->add(new InstallDbCommand());
 $app->add(new UpdateDbCommand());
 $app->add(new InstallCommand());
+$app->add(new ListCommand());
 
 $app->run();

@@ -10,13 +10,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class InstallCommand
+ * Class ListCommand
  *
- * Installs a language in Joomla
+ * Lists available languages that can be installed
  *
  * @package JoomlaCli\Console\Command\Extension\Language
  */
-class InstallCommand extends Command
+class ListCommand extends Command
 {
     /**
      * Configure command
@@ -26,12 +26,13 @@ class InstallCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('extension:language:install')
+            ->setName('extension:language:list')
             ->setDescription('Install a joomla language')
             ->addArgument(
-                'language',
-                InputArgument::REQUIRED,
-                'Language to install'
+                'list',
+                InputArgument::OPTIONAL,
+                'What to list: available || installed',
+                'available'
             )
             ->addOption(
                 'path',
@@ -53,7 +54,12 @@ class InstallCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->check($input);
-        $this->installLanguage($input, $output);
+
+        if ($input->getArgument('list') === 'installed') {
+            $this->listInstalledLanguages($input, $output);
+        } else {
+            $this->listAvailableLanguages($input, $output);
+        }
 
     }
 
@@ -84,7 +90,7 @@ class InstallCommand extends Command
     }
 
     /**
-     * Install language
+     * List available languages
      *
      * @param InputInterface  $input  input cli object
      * @param OutputInterface $output output cli object
@@ -93,12 +99,10 @@ class InstallCommand extends Command
      *
      * @return void
      */
-    protected function installLanguage(InputInterface $input, OutputInterface $output)
+    protected function listAvailableLanguages(InputInterface $input, OutputInterface $output)
     {
         $joomlaApp = Bootstrapper::getApplication($input->getOption('path'));
         $joomlaApp->set('list_limit', 10000);
-        $lang = $input->getArgument('language');
-
 
         \JModelLegacy::addIncludePath($joomlaApp->getPath() . '/administrator/components/com_installer/models', 'InstallerModel');
         /* @var $model \InstallerModelLanguages */
@@ -107,15 +111,33 @@ class InstallCommand extends Command
         $items = $model->getItems();
 
         foreach ($items as $item) {
-            if (strtoupper($item->name) === strtoupper($lang)) {
-
-                $output->writeln('<info>Installing language '. $lang .'</info>');
-                $model->install([$item->update_id]);
-                return;
-            }
+            $output->writeln($item->name);
         }
 
-        throw new \RuntimeException('Language ' . $lang . ' not found!');
+    }
 
+    /**
+     * List installed languages
+     *
+     * @param InputInterface  $input  input cli object
+     * @param OutputInterface $output output cli object
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function listInstalledLanguages(InputInterface $input, OutputInterface $output)
+    {
+        $joomlaApp = Bootstrapper::getApplication($input->getOption('path'));
+        $joomlaApp->set('list_limit', 10000);
+
+        \JModelLegacy::addIncludePath($joomlaApp->getPath() . '/administrator/components/com_languages/models', 'LanguagesModel');
+        /* @var $model \InstallerModelLanguages */
+        $model = \JModelLegacy::getInstance('Installed', 'LanguagesModel');
+        $items = $model->getData();
+
+        foreach ($items as $item) {
+            $output->writeln($item->name);
+        }
     }
 }
