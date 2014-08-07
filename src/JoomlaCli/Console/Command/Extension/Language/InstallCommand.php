@@ -116,8 +116,10 @@ class InstallCommand extends Command
                 } else {
                     // language in database but not on disk, lets cleanup database first so we can install
                     $db = \JFactory::getDbo();
-                    $db->query('DELETE FROM #__extensions WHERE type=' . $db->quote('language') . ' AND element=' . $db->quote($item->element));
-                    $db->query('DELETE FROM #__extensions WHERE type=' . $db->quote('package') . ' AND element=' . $db->quote('pkg_' . $item->element));
+                    $db->setQuery('DELETE FROM #__extensions WHERE type=' . $db->quote('language') . ' AND element=' . $db->quote($item->element));
+                    $db->query();
+                    $db->setQuery('DELETE FROM #__extensions WHERE type=' . $db->quote('package') . ' AND element=' . $db->quote('pkg_' . $item->element));
+                    $db->query();
                     break;
                 }
             }
