@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Zend\Config\Config;
 
 /**
  * Class DownloadCommand
@@ -39,6 +40,20 @@ class DownloadCommand extends Command
      * @var bool
      */
     protected $keepInstallationFolder;
+
+    /**
+     * @var
+     */
+    protected $globalConfig;
+
+    /**
+     * @param Config $config
+     */
+    public function __construct(Config $config)
+    {
+        parent::__construct();
+        $this->globalConfig = $config;
+    }
 
     /**
      * Configure command
@@ -132,17 +147,33 @@ class DownloadCommand extends Command
 
         $release = array_keys($this->release)[0];
         $url = array_values($this->release)[0];
-        $output->writeln('<info>Downloading release '. $release .'</info>');
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'Joomla-cli');
 
-        $bytes = file_put_contents($tempFile, fopen($url, 'r'));
-        if ($bytes === false || $bytes === 0) {
-            throw new \RuntimeException(sprintf('Failed to download %s', $url));
+        if (!file_exists($this->globalConfig->get('cache-dir') . '/releases')) {
+            $output->writeln('<info>Cache dir does not exist, creating...</info>');
+            $cacheDir = escapeshellarg($this->globalConfig->get('cache-dir') . '/releases');
+            `mkdir -p $cacheDir`;
+            unset($cacheDir);
         }
 
+        $cachePath = $this->globalConfig->get('cache-dir') . '/releases/' . $release;
+
+        if (file_exists($cachePath)) {
+            // load from cache
+            $output->writeln('<info>Loading from cache!</info>');
+        } else {
+            // download to cache
+            $output->writeln('<info>Downloading release '. $release .'</info>');
+            $bytes = file_put_contents($cachePath, fopen($url, 'r'));
+            if ($bytes === false || $bytes === 0) {
+                throw new \RuntimeException(sprintf('Failed to download %s', $url));
+            }
+        }
+
+        $cachePathEscaped = escapeshellarg($cachePath);
+
         // unpack
-        `cd $target; tar xzf $tempFile --strip 1`;
+        `cd $target; tar xzf $cachePathEscaped --strip 1`;
 
         if (!$this->keepInstallationFolder) {
             $installationFolder = escapeshellarg($this->target . '/installation');
@@ -150,6 +181,10 @@ class DownloadCommand extends Command
             `rm -rf $installationFolder`;
         }
 
-        unlink($tempFile);
+        if (!$this->versions->isTag($release)) {
+            unlink($cachePath);
+        }
+
+
     }
 }
