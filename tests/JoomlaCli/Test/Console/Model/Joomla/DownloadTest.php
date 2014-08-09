@@ -25,7 +25,7 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
     public function testDownloadCached()
     {
         $download = new Download($this->cachePath);
-        $download->download('https://github.com/joomla/joomla-cms/archive/refs/tags/3.3.3.tar.gz', '3.3.3', $this->target);
+        $download->download($this->downloadPath, '3.3.3', $this->target);
 
         $this->assertEquals(true, file_exists($this->cachePath . '/3.3.3'));
         $this->assertEquals(true, file_exists($this->target . '/includes'));
@@ -36,7 +36,7 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
     public function testDownloadUncached()
     {
         $download = new Download($this->cachePath);
-        $download->download('https://github.com/joomla/joomla-cms/archive/refs/tags/3.3.3.tar.gz', '3.3.3', $this->target, false);
+        $download->download($this->downloadPath, '3.3.3', $this->target, false);
 
         $this->assertEquals(false, file_exists($this->cachePath . '/3.3.3'));
         $this->assertEquals(true, file_exists($this->target . '/includes'));
@@ -47,6 +47,10 @@ class DownloadTest extends \PHPUnit_Framework_TestCase
     {
         $this->cachePath = sys_get_temp_dir() . '/joomla-cli-download-test-cache';
         $this->target = sys_get_temp_dir() . '/joomla-cli-download-test-target';
+
+        // we override the download path with a local test package to speed up testing a lot and removing dependencies
+        // to external services.
+        $this->downloadPath = realpath(__DIR__ . '/../../../../../resources/joomla-minimal-test-package.tar.gz');
     }
 
     protected function tearDown()
