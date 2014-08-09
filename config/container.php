@@ -6,6 +6,7 @@ use JoomlaCli\Console\Command\Core\InstallDbCommand;
 use JoomlaCli\Console\Command\Core\UpdateDbCommand;
 use JoomlaCli\Console\Command\Extension\Language\InstallCommand;
 use JoomlaCli\Console\Command\Extension\Language\ListCommand;
+use JoomlaCli\Console\Model\Joomla\Download;
 use Pimple\Container;
 use Symfony\Component\Console\Application;
 
@@ -15,8 +16,12 @@ $c['config'] = function () {
     return new Config();
 };
 
+$c['model.joomla.download'] = function ($c) {
+    return new Download($c['config']->get('cache-dir') . '/releases');
+};
+
 $c['command.core.download'] = function ($c) {
-    return new DownloadCommand($c['config']);
+    return new DownloadCommand($c['model.joomla.download']);
 };
 
 $c['command.core.installdb'] = function ($c) {
