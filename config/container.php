@@ -1,18 +1,18 @@
 <?php
 
+use JoomlaCli\Console\Model\Config;
 use JoomlaCli\Console\Command\Core\DownloadCommand;
 use JoomlaCli\Console\Command\Core\InstallDbCommand;
 use JoomlaCli\Console\Command\Core\UpdateDbCommand;
 use JoomlaCli\Console\Command\Extension\Language\InstallCommand;
 use JoomlaCli\Console\Command\Extension\Language\ListCommand;
-use JoomlaCli\Console\Factory;
 use Pimple\Container;
 use Symfony\Component\Console\Application;
 
 $c = new Container();
 
 $c['config'] = function () {
-    return Factory::createConfig();
+    return new Config();
 };
 
 $c['command.core.download'] = function ($c) {
