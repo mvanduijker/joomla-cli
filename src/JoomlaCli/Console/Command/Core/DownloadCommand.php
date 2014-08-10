@@ -3,7 +3,7 @@
 namespace JoomlaCli\Console\Command\Core;
 
 use JoomlaCli\Console\Model\Joomla\Download;
-use JoomlaCli\Joomla\Versions;
+use \JoomlaCli\Console\Model\Joomla\Versions;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,21 +16,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DownloadCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected $version;
-
-    /**
-     * @var Versions
-     */
-    protected $versions;
-
-    /**
-     * @var Array
-     */
-    protected $release;
-
     /**
      * @var string
      */
@@ -47,12 +32,26 @@ class DownloadCommand extends Command
     protected $downloadModel;
 
     /**
-     * @param Download $downloadModel
+     * @var Versions
      */
-    public function __construct(Download $downloadModel)
+    protected $versionsModel;
+
+    /**
+     * @var Array
+     */
+    protected $version;
+
+    /**
+     * Constructor
+     *
+     * @param Download $downloadModel model to handle downloads
+     * @param Versions $versionsModel model to handle versions
+     */
+    public function __construct(Download $downloadModel, Versions $versionsModel)
     {
         parent::__construct();
         $this->downloadModel = $downloadModel;
+        $this->versionsModel = $versionsModel;
     }
 
     /**
@@ -99,9 +98,7 @@ class DownloadCommand extends Command
     {
 
         $this->target = $input->getOption('path');
-        $this->version = $input->getOption('joomla-version');
-        $this->versions = new Versions();
-        $this->release = $this->versions->getVersion($this->version);
+        $this->version = $this->versionsModel->getVersion($input->getOption('joomla-version'));
         $this->keepInstallationFolder = $input->getOption('keep-installation-folder');
 
         $this->check();
@@ -122,7 +119,7 @@ class DownloadCommand extends Command
             throw new \RuntimeException('Directory ' . $this->target . ' already exists!');
         }
 
-        if (!$this->release) {
+        if (!$this->version) {
             throw new \RuntimeException('Could not find version of ' . $this->version);
         }
     }
@@ -138,15 +135,15 @@ class DownloadCommand extends Command
      */
     protected function doDownload(OutputInterface $output)
     {
-        $release = array_keys($this->release)[0];
-        $url = array_values($this->release)[0];
+        $release = array_keys($this->version)[0];
+        $url = array_values($this->version)[0];
 
         $output->writeln('Downloading and extracting release ' . $release);
         $this->downloadModel->download(
             $url,
             $release,
             $this->target,
-            $this->versions->isTag($release)
+            $this->versionsModel->isTag($release)
         );
         $output->writeln('Installed Joomla to ' . $this->target);
 

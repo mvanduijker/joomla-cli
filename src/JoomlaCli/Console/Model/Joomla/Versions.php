@@ -37,7 +37,7 @@ class Versions
     /**
      * @var array
      */
-    protected $versions = [];
+    protected $versions = null;
 
     /**
      * Constructor

@@ -7,21 +7,26 @@ use JoomlaCli\Console\Command\Core\UpdateDbCommand;
 use JoomlaCli\Console\Command\Extension\Language\InstallCommand;
 use JoomlaCli\Console\Command\Extension\Language\ListCommand;
 use JoomlaCli\Console\Model\Joomla\Download;
+use JoomlaCli\Console\Model\Joomla\Versions;
 use Pimple\Container;
 use Symfony\Component\Console\Application;
 
 $c = new Container();
 
-$c['config'] = function () {
+$c['model.config'] = function () {
     return new Config();
 };
 
 $c['model.joomla.download'] = function ($c) {
-    return new Download($c['config']->get('cache-dir') . '/releases');
+    return new Download($c['model.config']->get('cache-dir') . '/releases');
+};
+
+$c['model.joomla.versions'] = function ($c) {
+    return new Versions($c['model.config']->get('cache-dir') . '/versions.json');
 };
 
 $c['command.core.download'] = function ($c) {
-    return new DownloadCommand($c['model.joomla.download']);
+    return new DownloadCommand($c['model.joomla.download'], $c['model.joomla.versions']);
 };
 
 $c['command.core.installdb'] = function ($c) {
