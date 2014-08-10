@@ -141,19 +141,21 @@ class DownloadCommand extends Command
         $release = array_keys($this->release)[0];
         $url = array_values($this->release)[0];
 
-
+        $output->writeln('Downloading and extracting release ' . $release);
         $this->downloadModel->download(
             $url,
             $release,
             $this->target,
             $this->versions->isTag($release)
         );
-
+        $output->writeln('Installed Joomla to ' . $this->target);
 
         if (!$this->keepInstallationFolder) {
             $installationFolder = escapeshellarg($this->target . '/installation');
 
             `rm -rf $installationFolder`;
+
+            $output->writeln('Removed installation folder');
         }
     }
 }
