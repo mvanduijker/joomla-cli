@@ -2,7 +2,8 @@
 
 namespace JoomlaCli\Console\Command\Core;
 
-use JoomlaCli\Joomla\Versions;
+use JoomlaCli\Console\Model\Joomla\Download;
+use JoomlaCli\Console\Model\Joomla\Versions;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,19 +19,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 class InstallDbCommand extends Command
 {
     /**
-     * @var string
-     */
-    protected $version;
-
-    /**
      * @var Versions
      */
-    protected $versions;
+    protected $versionsModel;
 
     /**
      * @var Array
      */
-    protected $release;
+    protected $version;
 
     /**
      * @var string
@@ -66,6 +62,20 @@ class InstallDbCommand extends Command
      * @var bool
      */
     protected $installSampleData;
+
+
+    /**
+     * Constructor
+     *
+     * @param Download $downloadModel model to handle Joomla downloads
+     * @param Versions $versionsModel model to handle Joomla versions
+     */
+    public function __construct(Download $downloadModel, Versions $versionsModel)
+    {
+        parent::__construct();
+        $this->downloadModel = $downloadModel;
+        $this->versionsModel = $versionsModel;
+    }
 
     /**
      * Configure command
@@ -138,9 +148,7 @@ class InstallDbCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $this->version = $input->getOption('joomla-version');
-        $this->versions = new Versions();
-        $this->release = $this->versions->getVersion($this->version);
+        $this->version = $this->versionsModel->getVersion($input->getOption('joomla-version'));
         $this->dbname = $input->getOption('dbname');
         $this->dbuser = $input->getOption('dbuser');
         $this->dbpassword = $input->getOption('dbpass');
@@ -149,7 +157,7 @@ class InstallDbCommand extends Command
         $this->target = sys_get_temp_dir() . '/' . uniqid('Joomla-cli');
         $this->installSampleData = $input->getOption('install-sample-data');
 
-        $this->check();
+        $this->check($input);
         $this->doInstallDb($output);
 
     }
@@ -157,17 +165,18 @@ class InstallDbCommand extends Command
     /**
      * Perform some checks before we start executing real stuff
      *
+     * @param InputInterface $input input object to retrieve cli input vars
+     *
      * @throws \RuntimeException
      *
      * @return void
      */
-    protected function check()
+    protected function check(InputInterface $input)
     {
-        if (!$this->release) {
-            throw new \RuntimeException('Could not find version of ' . $this->version);
+        if (!$this->version) {
+            throw new \RuntimeException('Could not find version of ' . $input->getOption('joomla-version'));
         }
     }
-
 
     /**
      * Perform the sql statements, also downloads given Joomla version so we can get the install.sql
@@ -181,26 +190,15 @@ class InstallDbCommand extends Command
      */
     protected function doInstallDb(OutputInterface $output)
     {
-        $target = escapeshellarg($this->target);
+        $release = array_keys($this->version)[0];
+        $url = array_values($this->version)[0];
 
-        $returnValue = `mkdir -p $target`;
-        if ($returnValue) {
-            throw new \RuntimeException('Could not create directory ' . $this->target);
-        }
-
-        $release = array_keys($this->release)[0];
-        $url = array_values($this->release)[0];
-        $output->writeln('<info>Downloading release '. $release .'</info>');
-
-        $tempFile = tempnam(sys_get_temp_dir(), 'Joomla-cli');
-
-        $bytes = file_put_contents($tempFile, fopen($url, 'r'));
-        if ($bytes === false || $bytes === 0) {
-            throw new \RuntimeException(sprintf('Failed to download %s', $url));
-        }
-
-        // unpack
-        `cd $target; tar xzf $tempFile --strip 1`;
+        $this->downloadModel->download(
+            $url,
+            $release,
+            $this->target,
+            $this->versionsModel->isTag($release)
+        );
 
         // do sql stuff
         try {
@@ -209,12 +207,12 @@ class InstallDbCommand extends Command
             $this->createAdminUser();
 
         } catch (\Exception $e) {
-            $this->cleanUp($tempFile, $this->target);
+            $this->cleanUp($this->target);
 
             throw $e;
         }
 
-        $this->cleanUp($tempFile, $this->target);
+        $this->cleanUp($this->target);
     }
 
     /**
@@ -289,7 +287,7 @@ class InstallDbCommand extends Command
      */
     protected function createAdminUser()
     {
-        $release = array_keys($this->release)[0];
+        $release = array_keys($this->version)[0];
         if (is_numeric(substr($release, 0, 1)) && substr($release, 0, 1) < 3) {
             // joomla 2.x admin user insert query
             $query = 'INSERT INTO `#__users` ' .
@@ -334,15 +332,13 @@ class InstallDbCommand extends Command
     /**
      * Cleanup created temp files
      *
-     * @param string $tempFile   tarBall
-     * @param string $tempTarget joomla installation directory
+     * @param string $tempTarget temp joomla installation directory
      *
      * @return void
      */
-    protected function cleanUp($tempFile, $tempTarget)
+    protected function cleanUp($tempTarget)
     {
         $target = escapeshellarg($tempTarget);
-        unlink($tempFile);
         `rm -rf $target`;
     }
 }

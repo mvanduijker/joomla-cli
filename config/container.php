@@ -30,7 +30,7 @@ $c['command.core.download'] = function ($c) {
 };
 
 $c['command.core.installdb'] = function ($c) {
-    return new InstallDbCommand();
+    return new InstallDbCommand($c['model.joomla.download'], $c['model.joomla.versions']);
 };
 
 $c['command.core.updatedb'] = function ($c) {
