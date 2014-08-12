@@ -1,17 +1,36 @@
 <?php
 
 namespace JoomlaCli\Console\Model\Joomla;
-
+/**
+ * Class Download
+ *
+ * @package JoomlaCli\Console\Model\Joomla
+ */
 class Download
 {
+    /**
+     * @var string
+     */
     protected $cachePath;
 
+    /**
+     * Constructor
+     *
+     * @param string $cachePath directory path where to cache the downloads
+     */
     public function __construct($cachePath)
     {
         $this->cachePath = $cachePath;
         $this->check();
     }
 
+    /**
+     * Check settings
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     protected function check()
     {
         if (!file_exists($this->cachePath)) {
@@ -25,6 +44,15 @@ class Download
         }
     }
 
+    /**
+     * Check target location, if not exists it creates it.
+     *
+     * @param string $target path
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     protected function checkTarget($target)
     {
         if (!file_exists($target)) {
@@ -37,6 +65,18 @@ class Download
         }
     }
 
+    /**
+     * Perform the download
+     *
+     * @param string $url           url to download
+     * @param string $release       name / version of the download
+     * @param string $target        where to unpack the download
+     * @param bool   $cacheDownload to keep the download
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
     public function download($url, $release, $target, $cacheDownload = true)
     {
         $this->checkTarget($target);
