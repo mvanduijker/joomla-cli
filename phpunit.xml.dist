@@ -22,4 +22,10 @@
             <directory>./src/JoomlaCli/</directory>
         </whitelist>
     </filter>
+    <php>
+        <var name="DB_HOST" value="192.168.56.2" />
+        <var name="DB_USER" value="root" />
+        <var name="DB_PASSWD" value="" />
+        <var name="DB_DBNAME" value="joomla-cli-test" />
+    </php>
 </phpunit>
