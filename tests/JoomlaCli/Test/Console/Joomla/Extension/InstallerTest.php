@@ -2,9 +2,15 @@
 
 namespace JoomlaCli\Test\Console\Joomla\Extension;
 
-
 use JoomlaCli\Console\Joomla\Extension\Installer;
 
+/**
+ * Class InstallerTest
+ *
+ * Manifest documentation: http://docs.joomla.org/Manifest_files
+ *
+ * @package JoomlaCli\Test\Console\Joomla\Extension
+ */
 class InstallerTest extends \PHPUnit_Framework_TestCase
 {
 

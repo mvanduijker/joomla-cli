@@ -43,36 +43,65 @@ class Component implements AdapterInterface
             throw new \RuntimeException('Invalid manifest file, administration tag missing');
         }
 
+        $frontendTarget = rtrim($target, '/') . '/components/' . $element;
+        $adminTarget = rtrim($target, '/') . '/administrator/components/' . $element;
+
         // start copying files
         $fs = new Filesystem();
 
         // copy frontend component files
-        if ($this->manifest->files['folder']) {
-            $frontendSource = $this->path . '/' . trim((string)$this->manifest->files['folder'], '/');
-            $frontendTarget = rtrim($target, '/') . '/components/' . $element;
+        if ($this->manifest->files) {
 
-            $fs->mkdir($frontendTarget);
-            $fs->mirror($frontendSource, $frontendTarget);
+            if ($this->manifest->files['folder']) {
+                $frontendSource = $this->path . '/' . trim((string)$this->manifest->files['folder'], '/');
+
+                if (!file_exists($frontendSource)) {
+                    throw new \RuntimeException('Source frontend component folder does not exists!');
+                }
+
+                $fs->mkdir($frontendTarget);
+                $fs->mirror($frontendSource, $frontendTarget);
+            } else {
+                // copy per file in files element, when folder is set, it will copy all anyways
+                // TODO
+            }
         }
 
         // copy administrator component files
-        if ($this->manifest->administration->files['folder']) {
+        if ($this->manifest->administration->files) {
 
-            $adminSource = $this->path . '/' . trim((string)$this->manifest->administration->files['folder'], '/');
-            $adminTarget = rtrim($target, '/') . '/administrator/components/' . $element;
+            if ($this->manifest->administration->files['folder']) {
+                $adminSource = $this->path . '/' . trim((string)$this->manifest->administration->files['folder'], '/');
 
-            $fs->mkdir($adminTarget);
-            $fs->mirror($adminSource, $adminTarget);
+                if (!file_exists($adminSource)) {
+                    throw new \RuntimeException('Source adminstrator component folder does not exists!');
+                }
 
+                $fs->mkdir($adminTarget);
+                $fs->mirror($adminSource, $adminTarget);
+            } else {
+                // copy per file in files element, when folder is set, it will copy all anyways
+                // TODO
+            }
         }
 
-        // copy media files
+        // copy media files TODO
 
-        // copy frontend language files
+        // copy frontend language files TODO
 
-        // copy backend language files
+        // copy backend language files TODO
 
         // copy manifest script
+        if ($this->manifest->scriptfile) {
+            $scriptfile = (string)$this->manifest->scriptfile;
+            if ($scriptfile && file_exists($this->path . '/' . $scriptfile)) {
+                $scriptFileTarget = $adminTarget . '/' . $scriptfile;
+                if (!file_exists(dirname($scriptFileTarget))) {
+                    $fs->mkdir(dirname($scriptFileTarget));
+                }
+                $fs->copy($this->path . '/' . $scriptfile, $scriptFileTarget);
+            }
+        }
 
         return true;
     }

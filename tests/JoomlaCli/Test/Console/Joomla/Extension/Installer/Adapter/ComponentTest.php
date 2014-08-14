@@ -33,6 +33,8 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(file_exists($this->target . '/administrator/components/com_test/config.xml'));
         $this->assertTrue(file_exists($this->target . '/administrator/components/com_test/helpers/help.php'));
 
+        $this->assertTrue(file_exists($this->target . '/administrator/components/com_test/install.script.php'));
+
     }
 
     public function tearDown()
