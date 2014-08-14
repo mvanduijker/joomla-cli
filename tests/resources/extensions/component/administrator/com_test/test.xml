@@ -8,10 +8,16 @@
     <version>0.0.1</version>
     <description>A test component for unit testing</description>
 
+    <scriptfile>install.script.php</scriptfile>
+
     <files folder="com_test">
         <filename>test.php</filename>
         <folder>views</folder>
     </files>
+
+    <media folder="media" destination="com_test">
+        <filename>test.png</filename>
+    </media>
 
     <administration>
         <files folder="administrator/com_test">

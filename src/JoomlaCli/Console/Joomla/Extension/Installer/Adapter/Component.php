@@ -85,7 +85,26 @@ class Component implements AdapterInterface
             }
         }
 
-        // copy media files TODO
+        // copy media files
+        if ($this->manifest->media && $this->manifest->media['destination']) {
+            if ($this->manifest->media['folder']) {
+                $mediaFolder = (string)$this->manifest->media['destination'];
+                $mediaTarget =  rtrim($target, '/') . '/media/' . $mediaFolder;
+                $mediaSource = $this->path . '/' . trim((string)$this->manifest->media['folder'], '/');
+
+                if (!file_exists($mediaSource)) {
+                    throw new \RuntimeException('Source media folder does not exist!');
+                }
+
+                $fs->mkdir($mediaTarget);
+                $fs->mirror($mediaSource, $mediaTarget);
+
+            } else {
+                // copy per file in files element, when folder is set, it will copy all anyways
+                // TODO
+
+            }
+        }
 
         // copy frontend language files TODO
 
