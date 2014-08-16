@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension
+        type="module"
+        version="3.3"
+        client="site"
+        method="upgrade">
+    <!-- Note: Site is the default if client is not specified -->
+    <name>Site Test</name>
+    <creationDate>August 2014</creationDate>
+    <author>Mark van Duijker</author>
+    <authorEmail>mark@duyker.nl</authorEmail>
+    <authorUrl>https://github.com/mvanduijker</authorUrl>
+    <version>0.0.1</version>
+    <description>A test module for unit testing</description>
+    <scriptfile>test.scriptfile.php</scriptfile> <!-- New for 1.6 -->
+
+
+    <files>
+        <filename module="mod_test">mod_test.php</filename>
+    </files>
+
+    <languages>
+        <language
+                tag="en-GB">language/en-GB/en-GB.mod_test.ini</language>
+    </languages>
+
+    <media folder="media" destination="mod_test">
+        <filename>test.png</filename>
+    </media>
+</extension>
