@@ -37,6 +37,10 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue(file_exists($this->target . '/media/com_test/test.png'));
 
+        $this->assertTrue(file_exists($this->target . '/language/en-GB/en-GB.com_example.ini'));
+
+        $this->assertTrue(file_exists($this->target . '/administrator/language/en-GB/en-GB.com_example.ini'));
+
     }
 
     public function tearDown()

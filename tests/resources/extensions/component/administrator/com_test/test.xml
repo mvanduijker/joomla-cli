@@ -19,10 +19,18 @@
         <filename>test.png</filename>
     </media>
 
+    <languages folder="com_test/language">
+        <language tag="en-GB">en-GB/en-GB.com_example.ini</language>
+    </languages>
+
     <administration>
         <files folder="administrator/com_test">
             <filename>test.php</filename>
         </files>
+
+        <languages folder="administrator/com_test/language">
+            <language tag="en-GB">en-GB/en-GB.com_example.ini</language>
+        </languages>
     </administration>
 
 </extension>
