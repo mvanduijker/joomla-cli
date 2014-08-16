@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.3" type="plugin" group="system" method="upgrade">
+    <name>System - Test</name>
+    <creationDate>August 2014</creationDate>
+    <author>Mark van Duijker</author>
+    <authorEmail>mark@duyker.nl</authorEmail>
+    <authorUrl>https://github.com/mvanduijker</authorUrl>
+    <version>0.0.1</version>
+    <description>A test plugin for unit testing</description>
+
+    <scriptfile>test.scriptfile.php</scriptfile> <!-- New for 1.6 -->
+
+    <files>
+        <filename plugin="test">test.php</filename>
+    </files>
+
+    <media folder="media" destination="plg-system-test">
+        <filename>test.png</filename>
+    </media>
+
+</extension>
