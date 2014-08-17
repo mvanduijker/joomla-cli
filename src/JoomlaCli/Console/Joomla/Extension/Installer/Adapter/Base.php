@@ -112,6 +112,7 @@ abstract class Base implements AdapterInterface
             $folderPrefix = (string)$element['folder'];
         }
 
+
         foreach($element->language as $lang) {
             if (!$lang['tag']) {
                 continue;
