@@ -22,7 +22,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $extensionPath = realpath($this->basePath . 'module');
         $manifest = new \SimpleXMLElement(file_get_contents($extensionPath . '/mod_test.xml'));
 
-        $adapter = new Installer\Adapter\Module($extensionPath, $manifest);
+        $adapter = new Installer\Adapter\Module($extensionPath, $manifest, 'mod_test.xml');
         $adapter->install($this->target);
 
         $this->assertTrue(is_dir($this->target  . '/modules/mod_test'));
@@ -38,7 +38,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $extensionPath = realpath($this->basePath . 'admin-module');
         $manifest = new \SimpleXMLElement(file_get_contents($extensionPath . '/mod_test.xml'));
 
-        $adapter = new Installer\Adapter\Module($extensionPath, $manifest);
+        $adapter = new Installer\Adapter\Module($extensionPath, $manifest, 'mod_test.xml');
         $adapter->install($this->target);
 
         $this->assertTrue(is_dir($this->target  . '/administrator/modules/mod_test'));

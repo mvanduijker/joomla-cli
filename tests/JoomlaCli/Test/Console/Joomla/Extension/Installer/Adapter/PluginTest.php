@@ -10,17 +10,20 @@ class PluginTest extends \PHPUnit_Framework_TestCase
 
     protected $extensionPath;
 
+    protected $installFile;
+
     public function setUp()
     {
         $basePath = __DIR__ . '/../../../../../../../resources/extensions/';
         $this->extensionPath = realpath($basePath . 'plugin');
         $this->manifest = new \SimpleXMLElement(file_get_contents($this->extensionPath . '/test.xml'));
+        $this->installFile = 'test.xml';
         $this->target = sys_get_temp_dir() . '/joomla-cli-unit-test';
     }
 
     public function testInstall()
     {
-        $adapter = new Installer\Adapter\Plugin($this->extensionPath, $this->manifest);
+        $adapter = new Installer\Adapter\Plugin($this->extensionPath, $this->manifest, $this->installFile);
         $adapter->install($this->target);
 
         $this->assertTrue(is_dir($this->target  . '/plugins/system/test'));

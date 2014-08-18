@@ -23,6 +23,11 @@ class Installer
      */
     protected $adapter;
 
+    /**
+     * @var string
+     */
+    protected $installFile;
+
     public function __construct($path)
     {
         $this->path = $path;
@@ -51,9 +56,10 @@ class Installer
         $finder = new Finder();
         $finder->depth('==0')->name('*.xml')->files();
         foreach ($finder->in($this->path) as $file) {
-            /* @var $file SplFileObject */
+            /* @var $file \SplFileObject */
 
             $this->manifest = new \SimpleXMLElement($file->getContents());
+            $this->installFile = $file->getBasename();
             return true;
         }
 
@@ -68,6 +74,8 @@ class Installer
             throw new \RuntimeException('No adapter for extension type ' . $type);
         }
 
-        return new $class(pathinfo($this->path, PATHINFO_DIRNAME), $this->manifest);
+        var_dump($this->installFile);
+
+        return new $class(pathinfo($this->path, PATHINFO_DIRNAME), $this->manifest, $this->installFile);
     }
 }

@@ -19,6 +19,11 @@ abstract class Base implements AdapterInterface
     protected $manifest;
 
     /**
+     * @var string
+     */
+    protected $installFile;
+
+    /**
      * @var \Symfony\Component\Filesystem\Filesystem
      */
     protected $fs;
@@ -29,11 +34,13 @@ abstract class Base implements AdapterInterface
      * @param $path of the extension which needs to be installed
      * @param \SimpleXMLElement $manifest
      */
-    public function __construct($path, \SimpleXMLElement $manifest)
+    public function __construct($path, \SimpleXMLElement $manifest, $installFile)
     {
         $this->path = $path;
 
         $this->manifest = $manifest;
+
+        $this->installFile = $installFile;
 
         $this->fs = new Filesystem();
     }

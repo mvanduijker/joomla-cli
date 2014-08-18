@@ -22,7 +22,8 @@ class LanguageTest extends \PHPUnit_Framework_TestCase
         $extensionPath = realpath($this->basePath . 'language');
         $manifest = new \SimpleXMLElement(file_get_contents($extensionPath . '/install.xml'));
 
-        $adapter = new Installer\Adapter\Language($extensionPath, $manifest);
+
+        $adapter = new Installer\Adapter\Language($extensionPath, $manifest, 'install.xml');
         $adapter->install($this->target);
 
         $this->assertTrue(is_dir($this->target  . '/language/xx-XX'));
@@ -35,7 +36,7 @@ class LanguageTest extends \PHPUnit_Framework_TestCase
         $extensionPath = realpath($this->basePath . 'admin-language');
         $manifest = new \SimpleXMLElement(file_get_contents($extensionPath . '/install.xml'));
 
-        $adapter = new Installer\Adapter\Language($extensionPath, $manifest);
+        $adapter = new Installer\Adapter\Language($extensionPath, $manifest, 'install.xml');
         $adapter->install($this->target);
 
         $this->assertTrue(is_dir($this->target  . '/administrator/language/xx-XX'));
