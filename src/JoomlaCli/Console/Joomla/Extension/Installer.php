@@ -74,8 +74,6 @@ class Installer
             throw new \RuntimeException('No adapter for extension type ' . $type);
         }
 
-        var_dump($this->installFile);
-
         return new $class(pathinfo($this->path, PATHINFO_DIRNAME), $this->manifest, $this->installFile);
     }
 }
