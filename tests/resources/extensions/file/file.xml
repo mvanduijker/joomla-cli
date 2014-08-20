@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="file" version="2.5" method="upgrade">
+
+    <name>file</name>
+    <creationDate>August 2014</creationDate>
+    <author>Mark van Duijker</author>
+    <authorEmail>mark@duyker.nl</authorEmail>
+    <authorUrl>https://github.com/mvanduijker</authorUrl>
+    <version>0.0.1</version>
+    <description>Test file installer for unit testing</description>
+
+    <fileset>
+
+        <files folder="admin/test" target="administrator/test">
+            <filename>test.txt</filename>
+        </files>
+
+        <files folder="test" target="test">
+            <filename>test.txt</filename>
+        </files>
+    </fileset>
+</extension>
