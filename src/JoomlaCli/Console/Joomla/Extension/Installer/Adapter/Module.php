@@ -61,9 +61,9 @@ class Module extends Base
     }
 
     /**
-     * Installation / copying of plugin files
+     * Installation / copying of module files
      *
-     * @param $target full path to the extension directory {joomla_path}/plugins/{group}/{plugin}
+     * @param $target full path to the extension directory {joomla_path}/modules/{module_name}
      */
     protected function installModuleFiles($target)
     {

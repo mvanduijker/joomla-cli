@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE install PUBLIC "-//Joomla! 2.5//DTD template 1.0//EN" "http://www.joomla.org/xml/dtd/2.5/template-install.dtd">
+<extension version="3.3" type="template" client="site">
+    <name>test</name>
+    <creationDate>August 2014</creationDate>
+    <author>Mark van Duijker</author>
+    <authorEmail>mark@duyker.nl</authorEmail>
+    <authorUrl>https://github.com/mvanduijker</authorUrl>
+    <version>0.0.1</version>
+    <description>A test template for unit testing</description>
+    <files>
+        <filename>index.php</filename>
+    </files>
+    <media folder="media" destination="tpl_test">
+        <filename>test.png</filename>
+    </media>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/en-GB.tpl_test.ini</language>
+        <language tag="en-GB">en-GB/en-GB.tpl_test.sys.ini</language>
+    </languages>
+</extension>
