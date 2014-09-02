@@ -37,7 +37,7 @@ class Library extends Base
      * Installation / copying of Library files
      *
      * @param \SimpleXMLElement $element
-     * @param $target base path + name of component directory, for example {joomla-installation-path}/components/com_example
+     * @param $target base path + name of library, for example {joomla-installation-path}/libraries/example
      * @throws \RuntimeException
      */
     protected function installLibraryFiles(\SimpleXMLElement $element, $target)

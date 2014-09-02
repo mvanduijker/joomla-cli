@@ -38,10 +38,10 @@ class File extends Base
     }
 
     /**
-     * Installation / copying of component files
+     * Installation / copying files
      *
      * @param \SimpleXMLElement $element
-     * @param $target base path + name of component directory, for example {joomla-installation-path}/components/com_example
+     * @param $target path to where the files must be installed
      * @throws \RuntimeException
      */
     protected function installFileFiles(\SimpleXMLElement $element, $target)
