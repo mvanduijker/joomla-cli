@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension type="package" version="1.6">
+    <name>Test</name>
+    <packagename>test</packagename>
+    <creationDate>September 2014</creationDate>
+    <author>Mark van Duijker</author>
+    <authorEmail>mark@duyker.nl</authorEmail>
+    <authorUrl>https://github.com/mvanduijker</authorUrl>
+    <version>0.0.1</version>
+    <description>A test module for unit testing</description>
+    <packager>Mark van Duijker</packager>
+    <packagerurl>http://www.yoururl.com/</packagerurl>
+    <update>http://www.updateurl.com/update</update>
+    <files folder="packages">
+        <file type="component" id="test" >com_test.zip</file>
+        <file type="module" id="test" client="site">mod_test.zip</file>
+        <file type="library" id="test">lib_test.zip</file>
+        <file type="plugin" id="test" group="system">plg_test.zip</file>
+        <file type="template" id="helloworld" client="site">tpl_test.zip</file>
+    </files>
+</extension>

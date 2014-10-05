@@ -85,7 +85,7 @@ class Component extends Base
             $source = $this->path . '/' . trim((string)$element['folder'], '/');
 
             if (!file_exists($source)) {
-                throw new \RuntimeException('Source frontend component folder does not exists!');
+                throw new \RuntimeException('Source frontend component folder does not exists! ' . $source);
             }
 
             $this->fs->mkdir($target);
