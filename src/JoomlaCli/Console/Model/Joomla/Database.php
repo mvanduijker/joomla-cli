@@ -2,6 +2,10 @@
 
 namespace JoomlaCli\Console\Model\Joomla;
 
+/**
+ * Class Database
+ * @package JoomlaCli\Console\Model\Joomla
+ */
 class Database
 {
     /**
